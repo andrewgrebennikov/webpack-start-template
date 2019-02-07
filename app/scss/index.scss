@@ -1,0 +1,13 @@
+@import 'main';
+
+.home {
+	&__text {
+		font-size: 40px;
+		background-image: url('../img/icons/icon-prev.svg');
+		color: red;
+		
+		@media (max-width: $screen-md) {
+			color: #000;
+		}
+	}
+}

@@ -1,0 +1,8 @@
+@import 'main';
+
+.about {
+	&__text {
+		color: orange;
+		font-size: 40px;
+	}
+}

@@ -1,0 +1,10 @@
+@import 'vars';
+@import 'fonts';
+@import 'libs';
+@import 'page';
+
+body {
+	font-family: $arial;
+}
+
+@import 'print';
