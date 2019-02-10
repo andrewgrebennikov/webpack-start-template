@@ -1,5 +1,6 @@
 const path = require('path');
 
+const webpack = require('webpack');
 const CleanWebpackPlugin = require('clean-webpack-plugin'); //installed via npm
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
@@ -36,10 +37,15 @@ module.exports = {
 			{
 				test: /\.js$/,
 				exclude: /node_modules/,
-				loader: 'babel-loader',
-				options: {
-					presets: ['@babel/preset-env']
-				}
+				use: [
+					'thread-loader',
+					{
+						loader: 'babel-loader',
+						options: {
+							presets: ['@babel/preset-env']
+						}
+					}
+				]
 			},
 			{
 				test: /\.(ttf|eot|woff|woff2)$/,
@@ -111,6 +117,9 @@ module.exports = {
 
 	// https://webpack.js.org/concepts/plugins/
 	plugins: [
+		new webpack.ProvidePlugin({
+			fetch: 'imports-loader?this=>global!exports-loader?global.fetch!whatwg-fetch'
+		}),
 		new CleanWebpackPlugin(buildPath),
 		new HtmlWebpackPlugin({
 			template: './app/index.html',
@@ -139,6 +148,9 @@ module.exports = {
 
 	// https://webpack.js.org/configuration/optimization/
 	optimization: {
+		splitChunks: {
+			chunks: 'all'
+		},
 		minimizer: [
 			new UglifyJsPlugin({
 				cache: true,

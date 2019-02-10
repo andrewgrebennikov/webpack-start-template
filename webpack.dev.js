@@ -1,4 +1,16 @@
+const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const path = require('path');
+const cacheDir = path.resolve(__dirname, '.', 'node_modules', '.cache');
+
+const getThreadLoader = name => ({
+	loader: 'thread-loader',
+	options: {
+		workerParallelJobs: 50,
+		poolRespawn: false,
+		name
+	}
+});
 
 module.exports = {
 
@@ -15,8 +27,9 @@ module.exports = {
 
 	// https://webpack.js.org/configuration/dev-server/
 	devServer: {
-		port: 8080,
-		overlay: true
+		compress: true,
+		hot: true,
+		historyApiFallback: true
 	},
 
 	// https://webpack.js.org/concepts/loaders/
@@ -25,10 +38,22 @@ module.exports = {
 			{
 				test: /\.js$/,
 				exclude: /node_modules/,
-				loader: 'babel-loader',
-				options: {
-					presets: ['@babel/preset-env']
-				}
+				use: [
+					{
+						loader: 'cache-loader',
+						options: {
+							cacheDirectory: path.resolve(cacheDir, 'js')
+						}
+					},
+					getThreadLoader('js'),
+					{
+						loader: 'babel-loader',
+						options: {
+							presets: ['@babel/preset-env'],
+							cacheDirectory: path.resolve(cacheDir, 'babel')
+						}
+					}
+				]
 			},
 			{
 				test: /\.(ttf|eot|woff|woff2)$/,
@@ -49,25 +74,29 @@ module.exports = {
 				]
 			},
 			{
-				test: /\.(scss|css)$/,
+				test: /\.scss$/,
 				use: [
 					{
-						// creates style nodes from JS strings
-						loader: "style-loader",
+						loader: 'cache-loader',
+						options: {
+							cacheDirectory: path.resolve(cacheDir, 'css')
+						}
+					},
+					getThreadLoader('css'),
+					{
+						loader: 'style-loader',
 						options: {
 							sourceMap: true
 						}
 					},
 					{
-						// translates CSS into CommonJS
-						loader: "css-loader",
+						loader: 'css-loader',
 						options: {
 							sourceMap: true
 						}
 					},
 					{
-						// compiles Sass to CSS
-						loader: "sass-loader",
+						loader: 'sass-loader',
 						options: {
 							outputStyle: 'expanded',
 							sourceMap: true,
@@ -96,6 +125,10 @@ module.exports = {
 
 	// https://webpack.js.org/concepts/plugins/
 	plugins: [
+		new webpack.HotModuleReplacementPlugin(),
+		new webpack.ProvidePlugin({
+			fetch: 'imports-loader?this=>global!exports-loader?global.fetch!whatwg-fetch'
+		}),
 		new HtmlWebpackPlugin({
 			template: './app/index.html',
 			inject: true,
